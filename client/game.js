@@ -24,24 +24,21 @@ const game = new Phaser.Game(config);
 // 🧠 VARIABLES
 let players = {};
 let arrows;
-let myId;
+let myId = null;
 let scoreText;
 
 // ================= PRELOAD =================
 function preload() {
-  // 🧍 Player (auto online)
   this.load.image(
     "player",
     "https://labs.phaser.io/assets/sprites/phaser-dude.png"
   );
 
-  // 🏹 Arrow
   this.load.image(
     "arrow",
     "https://labs.phaser.io/assets/sprites/arrow.png"
   );
 
-  // 🌌 Background
   this.load.image(
     "bg",
     "https://labs.phaser.io/assets/skies/space3.png"
@@ -64,6 +61,7 @@ function create() {
   });
 
   // 🔌 SOCKET EVENTS
+
   socket.on("currentPlayers", (serverPlayers) => {
     Object.keys(serverPlayers).forEach((id) => {
       addPlayer(self, id, serverPlayers[id]);
@@ -110,8 +108,9 @@ function create() {
 
   // 📱 CLICK / TOUCH TO SHOOT
   this.input.on("pointerdown", function (pointer) {
+    if (!myId || !players[myId]) return;
+
     let player = players[myId];
-    if (!player) return;
 
     let angle = Phaser.Math.Angle.Between(
       player.x,
@@ -124,7 +123,10 @@ function create() {
 
     shootArrow(self, player, angle, power);
 
-    socket.emit("shoot", { angle, power });
+    socket.emit("shoot", {
+      angle,
+      power
+    });
   });
 }
 
@@ -133,6 +135,8 @@ function update() {}
 
 // ================= ADD PLAYER =================
 function addPlayer(scene, id, data) {
+  if (players[id]) return;
+
   let player = scene.physics.add.sprite(
     data.x,
     data.y,
@@ -175,7 +179,7 @@ function shootArrow(scene, player, angle, power) {
 
       socket.emit("hit", {
         target: getPlayerId(target),
-        points: points
+        points
       });
 
       arr.destroy();

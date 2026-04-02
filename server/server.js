@@ -10,10 +10,10 @@ const io = new Server(server);
 // 📁 Serve frontend
 app.use(express.static(path.join(__dirname, "../client")));
 
-// 🧠 Game state
+// 🧠 Store players
 let players = {};
 
-// 🔌 Socket connection
+// 🔌 When player connects
 io.on("connection", (socket) => {
   console.log("Player connected:", socket.id);
 
@@ -28,10 +28,13 @@ io.on("connection", (socket) => {
   // Send all players to new user
   socket.emit("currentPlayers", players);
 
-  // Notify others
-  socket.broadcast.emit("newPlayer", players[socket.id]);
+  // 🔥 IMPORTANT FIX (send ID properly)
+  socket.broadcast.emit("newPlayer", {
+    id: socket.id,
+    ...players[socket.id]
+  });
 
-  // 🏹 Shoot event
+  // 🏹 Shooting event
   socket.on("shoot", (data) => {
     socket.broadcast.emit("shoot", {
       id: socket.id,
@@ -42,19 +45,19 @@ io.on("connection", (socket) => {
 
   // 💥 Hit event
   socket.on("hit", (data) => {
-    let shooter = players[socket.id];
-    let target = players[data.target];
+    const shooter = players[socket.id];
+    const target = players[data.target];
 
     if (!shooter || !target) return;
 
-    // Add score
+    // 🎯 Add score
     shooter.score += data.points;
 
-    // 🔄 Respawn target
+    // 🔄 Respawn target randomly
     target.x = Math.random() * 700 + 50;
     target.y = 400;
 
-    // Update all clients
+    // 📡 Update all players
     io.emit("updatePlayers", players);
   });
 

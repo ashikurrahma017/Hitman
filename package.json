@@ -1,1 +1,26 @@
 
+{
+  "name": "arrow-battle-game",
+  "version": "1.0.0",
+  "description": "Multiplayer 2D projectile game using Phaser and Socket.IO",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
+  },
+  "keywords": [
+    "game",
+    "phaser",
+    "multiplayer",
+    "socket.io"
+  ],
+  "author": "Ashikur Rahman",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

@@ -5,43 +5,122 @@
   <title>Arrow Battle</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- 🎨 External CSS -->
-  <link rel="stylesheet" href="styles.css">
+  <!-- 🎨 Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
 
-  <!-- 🎮 Phaser + Socket -->
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #0f172a, #020617);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    /* 🌌 Background Glow Animation */
+    body::before {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(56,189,248,0.15), transparent);
+      animation: glow 6s infinite linear;
+    }
+
+    @keyframes glow {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* 🎮 CONTAINER */
+    .menu {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 30px;
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      background: rgba(15, 23, 42, 0.6);
+      box-shadow: 0 0 40px rgba(56,189,248,0.3);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    /* 🎯 TITLE */
+    .title {
+      font-size: 32px;
+      margin-bottom: 30px;
+      color: #38bdf8;
+      text-shadow: 0 0 15px #38bdf8;
+    }
+
+    /* 🔘 BUTTON */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid #38bdf8;
+      background: #0f172a;
+      color: #e2e8f0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      background: #1e293b;
+      color: #38bdf8;
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #38bdf8;
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 👤 FOOTER */
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+  </style>
 </head>
 
 <body>
 
-  <div class="menu-container">
-
-    <!-- 🎯 GAME TITLE -->
+  <div class="menu">
     <div class="title">🎯 ARROW BATTLE</div>
 
-    <!-- 🔘 BUTTONS -->
-    <button class="btn" onclick="startGame()">▶ New Game</button>
-    <button class="btn" onclick="continueGame()">🔁 Continue</button>
-    <button class="btn" onclick="highScore()">🏆 High Score</button>
+    <button class="btn" onclick="startGame()">▶ START GAME</button>
+    <button class="btn" onclick="continueGame()">🔁 CONTINUE</button>
+    <button class="btn" onclick="highScore()">🏆 HIGH SCORE</button>
 
-    <!-- 👤 FOOTER -->
     <div class="footer">Powered by Ashikur Rahman</div>
-
   </div>
 
-  <!-- ⚙️ SCRIPT -->
   <script>
     function startGame() {
       window.location.href = "game.html";
     }
 
     function continueGame() {
-      alert("Continue feature coming soon");
+      alert("Coming soon");
     }
 
     function highScore() {
-      alert("High Score coming soon");
+      alert("Coming soon");
     }
   </script>
 

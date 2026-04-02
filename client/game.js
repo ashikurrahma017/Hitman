@@ -1,14 +1,11 @@
-const socket = io();
-
-// 🎮 CONFIG
 const config = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 500,
+  width: window.innerWidth,
+  height: window.innerHeight,
   physics: {
     default: "arcade",
     arcade: {
-      gravity: { y: 300 },
+      gravity: { y: 400 },
       debug: false
     }
   },
@@ -21,11 +18,7 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-// 🧠 VARIABLES
-let players = {};
-let arrows;
-let myId = null;
-let scoreText;
+let player, enemy, arrows, score = 0, scoreText;
 
 // ================= PRELOAD =================
 function preload() {
@@ -34,9 +27,10 @@ function preload() {
     "https://labs.phaser.io/assets/sprites/phaser-dude.png"
   );
 
+  // 🏹 REAL ARROW
   this.load.image(
     "arrow",
-    "https://labs.phaser.io/assets/sprites/arrow.png"
+    "https://labs.phaser.io/assets/sprites/longarrow.png"
   );
 
   this.load.image(
@@ -47,71 +41,33 @@ function preload() {
 
 // ================= CREATE =================
 function create() {
-  const self = this;
+  const width = this.scale.width;
+  const height = this.scale.height;
 
-  // 🌌 Background
-  this.add.image(400, 250, "bg").setDisplaySize(800, 500);
+  // 🌌 Background FULL SCREEN
+  this.add.image(width / 2, height / 2, "bg")
+    .setDisplaySize(width, height);
 
   arrows = this.physics.add.group();
 
-  // 🎯 Score
-  scoreText = this.add.text(10, 10, "Score: 0", {
-    fontSize: "20px",
+  // 🧍 PLAYER (LEFT SIDE)
+  player = this.physics.add.sprite(120, height - 120, "player");
+  player.setScale(2); // 🔥 BIG
+  player.setCollideWorldBounds(true);
+
+  // 🤖 ENEMY (RIGHT SIDE)
+  enemy = this.physics.add.sprite(width - 120, height - 120, "player");
+  enemy.setScale(2);
+  enemy.setTint(0xff0000); // red enemy
+
+  // 🎯 SCORE
+  scoreText = this.add.text(20, 20, "Score: 0", {
+    fontSize: "28px",
     fill: "#ffffff"
   });
 
-  // 🔌 SOCKET EVENTS
-
-  socket.on("currentPlayers", (serverPlayers) => {
-    Object.keys(serverPlayers).forEach((id) => {
-      addPlayer(self, id, serverPlayers[id]);
-
-      if (id === socket.id) {
-        myId = id;
-      }
-    });
-  });
-
-  socket.on("newPlayer", (playerData) => {
-    addPlayer(self, playerData.id, playerData);
-  });
-
-  socket.on("updatePlayers", (serverPlayers) => {
-    Object.keys(serverPlayers).forEach((id) => {
-      if (players[id]) {
-        players[id].setPosition(
-          serverPlayers[id].x,
-          serverPlayers[id].y
-        );
-
-        if (id === myId) {
-          scoreText.setText(
-            "Score: " + serverPlayers[id].score
-          );
-        }
-      }
-    });
-  });
-
-  socket.on("shoot", (data) => {
-    if (players[data.id]) {
-      shootArrow(self, players[data.id], data.angle, data.power);
-    }
-  });
-
-  socket.on("playerDisconnected", (id) => {
-    if (players[id]) {
-      players[id].destroy();
-      delete players[id];
-    }
-  });
-
-  // 📱 CLICK / TOUCH TO SHOOT
-  this.input.on("pointerdown", function (pointer) {
-    if (!myId || !players[myId]) return;
-
-    let player = players[myId];
-
+  // 📱 SHOOT CONTROL
+  this.input.on("pointerdown", (pointer) => {
     let angle = Phaser.Math.Angle.Between(
       player.x,
       player.y,
@@ -119,77 +75,43 @@ function create() {
       pointer.y
     );
 
-    let power = 350;
-
-    shootArrow(self, player, angle, power);
-
-    socket.emit("shoot", {
-      angle,
-      power
-    });
+    shootArrow(this, angle);
   });
 }
 
 // ================= UPDATE =================
 function update() {}
 
-// ================= ADD PLAYER =================
-function addPlayer(scene, id, data) {
-  if (players[id]) return;
+// ================= SHOOT =================
+function shootArrow(scene, angle) {
+  let arrow = scene.physics.add.image(player.x, player.y, "arrow");
 
-  let player = scene.physics.add.sprite(
-    data.x,
-    data.y,
-    "player"
-  );
-
-  player.setScale(0.5);
-  player.setCollideWorldBounds(true);
-
-  players[id] = player;
-}
-
-// ================= SHOOT ARROW =================
-function shootArrow(scene, player, angle, power) {
-  let arrow = scene.physics.add.image(
-    player.x,
-    player.y,
-    "arrow"
-  );
-
-  arrow.setScale(0.5);
+  arrow.setScale(1.5); // bigger arrow
 
   arrow.setVelocity(
-    power * Math.cos(angle),
-    power * Math.sin(angle)
+    600 * Math.cos(angle),
+    600 * Math.sin(angle)
   );
 
   arrow.setRotation(angle);
 
-  // 💥 HIT DETECTION
-  scene.physics.add.overlap(
-    arrow,
-    Object.values(players),
-    (arr, target) => {
-      if (target === player) return;
+  // 💥 COLLISION
+  scene.physics.add.overlap(arrow, enemy, (arr, target) => {
+    let hitY = arr.y - target.y;
 
-      let hitY = arr.y - target.y;
+    let points = hitY < -40 ? 10 : 5;
 
-      let points = hitY < -15 ? 10 : 5;
+    score += points;
+    scoreText.setText("Score: " + score);
 
-      socket.emit("hit", {
-        target: getPlayerId(target),
-        points
-      });
+    // 🔄 Enemy respawn random position
+    target.x = Phaser.Math.Between(
+      scene.scale.width / 2,
+      scene.scale.width - 100
+    );
 
-      arr.destroy();
-    }
-  );
-}
+    target.y = scene.scale.height - 120;
 
-// ================= HELPER =================
-function getPlayerId(playerObj) {
-  return Object.keys(players).find(
-    (id) => players[id] === playerObj
-  );
+    arr.destroy();
+  });
 }

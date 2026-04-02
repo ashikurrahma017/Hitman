@@ -2,110 +2,119 @@ const config = {
   type: Phaser.AUTO,
   width: window.innerWidth,
   height: window.innerHeight,
-  physics: {
-    default: "arcade",
-    arcade: {
-      gravity: { y: 0 }, // 🚫 NO GRAVITY (IMPORTANT)
-      debug: false
-    }
-  },
-  scene: { preload, create }
+  scene: { preload, create, update }
 };
 
 const game = new Phaser.Game(config);
 
-let player, enemy, arrows, score = 0, scoreText;
+let player, enemy, arrow = null;
+let score = 0, scoreText;
 
 // ================= PRELOAD =================
 function preload() {
   this.load.image("player", "https://labs.phaser.io/assets/sprites/phaser-dude.png");
-
   this.load.image("arrow", "https://labs.phaser.io/assets/sprites/longarrow.png");
-
   this.load.image("bg", "https://labs.phaser.io/assets/skies/space3.png");
 }
 
 // ================= CREATE =================
 function create() {
-  const width = this.scale.width;
-  const height = this.scale.height;
+  const w = this.scale.width;
+  const h = this.scale.height;
 
-  // 🌌 Background
-  this.add.image(width / 2, height / 2, "bg")
-    .setDisplaySize(width, height);
+  // Background
+  this.add.image(w / 2, h / 2, "bg").setDisplaySize(w, h);
 
-  arrows = this.physics.add.group();
+  // Player
+  player = this.add.image(120, h - 120, "player").setScale(2);
 
-  // 🧍 PLAYER
-  player = this.physics.add.sprite(120, height - 150, "player");
-  player.setScale(2);
-  player.body.setAllowGravity(false); // 🚫 NO FALL
-
-  // 🤖 ENEMY
+  // Enemy
   spawnEnemy(this);
 
-  // 🎯 SCORE
+  // Score
   scoreText = this.add.text(20, 20, "Score: 0", {
     fontSize: "28px",
-    fill: "#ffffff"
+    fill: "#fff"
   });
 
-  // 📱 SHOOT
+  // Shoot
   this.input.on("pointerdown", (pointer) => {
-    let angle = Phaser.Math.Angle.Between(
-      player.x,
-      player.y,
-      pointer.x,
-      pointer.y
+    shootArrow(this, pointer);
+  });
+}
+
+// ================= UPDATE =================
+function update() {
+  if (arrow && enemy) {
+    let dist = Phaser.Math.Distance.Between(
+      arrow.x, arrow.y,
+      enemy.x, enemy.y
     );
 
-    shootArrow(this, angle);
+    if (dist < 50) {
+      hitEnemy(this);
+    }
+  }
+}
+
+// ================= SHOOT =================
+function shootArrow(scene, pointer) {
+  if (arrow) arrow.destroy();
+
+  arrow = scene.add.image(player.x, player.y, "arrow").setScale(2);
+
+  let angle = Phaser.Math.Angle.Between(
+    player.x, player.y,
+    pointer.x, pointer.y
+  );
+
+  arrow.rotation = angle;
+
+  // move arrow manually
+  scene.tweens.add({
+    targets: arrow,
+    x: pointer.x,
+    y: pointer.y,
+    duration: 800,
+    ease: "Linear"
   });
+}
+
+// ================= HIT =================
+function hitEnemy(scene) {
+  if (!enemy) return;
+
+  score += 10;
+  scoreText.setText("Score: " + score);
+
+  // FALL ANIMATION
+  scene.tweens.add({
+    targets: enemy,
+    y: enemy.y + 300,
+    angle: 90,
+    duration: 600,
+    ease: "Power2",
+    onComplete: () => {
+      enemy.destroy();
+      spawnEnemy(scene);
+    }
+  });
+
+  arrow.destroy();
+  arrow = null;
 }
 
 // ================= SPAWN ENEMY =================
 function spawnEnemy(scene) {
-  const width = scene.scale.width;
-  const height = scene.scale.height;
+  const w = scene.scale.width;
+  const h = scene.scale.height;
 
-  if (enemy) enemy.destroy(); // remove old enemy
-
-  enemy = scene.physics.add.sprite(
-    Phaser.Math.Between(width / 2, width - 100),
-    height - 150,
+  enemy = scene.add.image(
+    Phaser.Math.Between(w / 2, w - 100),
+    h - 120,
     "player"
-  );
+  ).setScale(2);
 
-  enemy.setScale(2);
-  enemy.setTint(0xff0000);
-  enemy.body.setAllowGravity(false); // 🚫 NO FALL
-}
-
-// ================= SHOOT =================
-function shootArrow(scene, angle) {
-  let arrow = scene.physics.add.image(player.x, player.y, "arrow");
-
-  arrow.setScale(1.5);
-
-  arrow.setVelocity(
-    700 * Math.cos(angle),
-    700 * Math.sin(angle)
-  );
-
-  arrow.setRotation(angle);
-
-  // 💥 HIT
-  scene.physics.add.overlap(arrow, enemy, (arr, target) => {
-    let hitY = arr.y - target.y;
-
-    let points = hitY < -40 ? 10 : 5;
-
-    score += points;
-    scoreText.setText("Score: " + score);
-
-    arr.destroy();
-
-    // 🔥 INSTANT NEW ENEMY
-    spawnEnemy(scene);
-  });
+  // 🎨 Random color every time
+  enemy.setTint(Phaser.Display.Color.RandomRGB().color);
 }

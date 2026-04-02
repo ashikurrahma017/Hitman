@@ -1,1 +1,85 @@
+/* 🌌 GLOBAL RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
+/* 🎯 BODY BACKGROUND */
+body {
+  height: 100vh;
+  background: linear-gradient(135deg, #020617, #0f172a);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', sans-serif;
+  color: #e2e8f0;
+}
+
+/* 🎮 MENU CONTAINER */
+.menu-container {
+  text-align: center;
+  padding: 40px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.7);
+  box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+/* 🏹 GAME TITLE */
+.title {
+  font-size: 48px;
+  font-weight: bold;
+  color: #38bdf8;
+  margin-bottom: 40px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+/* 🔘 BUTTON STYLE */
+.btn {
+  display: block;
+  width: 240px;
+  margin: 12px auto;
+  padding: 14px;
+  font-size: 20px;
+  border-radius: 10px;
+  border: 1px solid #38bdf8;
+  background: #0f172a;
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* ✨ HOVER EFFECT */
+.btn:hover {
+  background: #1e293b;
+  color: #38bdf8;
+  transform: scale(1.07);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+}
+
+/* 🔥 CLICK EFFECT */
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* 🏆 FOOTER */
+.footer {
+  margin-top: 40px;
+  font-size: 14px;
+  color: #94a3b8;
+  opacity: 0.8;
+}
+
+/* 📱 MOBILE RESPONSIVE */
+@media (max-width: 600px) {
+  .title {
+    font-size: 32px;
+  }
+
+  .btn {
+    width: 200px;
+    font-size: 18px;
+  }
+}

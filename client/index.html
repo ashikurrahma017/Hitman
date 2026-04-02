@@ -3,74 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <title>Arrow Battle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Phaser -->
+  <!-- 🎨 External CSS -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- 🎮 Phaser + Socket -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.js"></script>
   <script src="/socket.io/socket.io.js"></script>
-
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      background: linear-gradient(135deg, #020617, #0f172a);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Segoe UI', sans-serif;
-      color: white;
-    }
-
-    .menu-container {
-      text-align: center;
-    }
-
-    .title {
-      font-size: 48px;
-      font-weight: bold;
-      color: #38bdf8;
-      margin-bottom: 40px;
-    }
-
-    .btn {
-      display: block;
-      width: 220px;
-      margin: 12px auto;
-      padding: 14px;
-      font-size: 20px;
-      border-radius: 8px;
-      border: 1px solid #38bdf8;
-      background-color: #0f172a;
-      color: #e2e8f0;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .btn:hover {
-      background-color: #1e293b;
-      color: #38bdf8;
-      transform: scale(1.05);
-    }
-
-    .footer {
-      margin-top: 40px;
-      font-size: 14px;
-      color: #94a3b8;
-    }
-  </style>
 </head>
 
 <body>
 
   <div class="menu-container">
+
+    <!-- 🎯 GAME TITLE -->
     <div class="title">🎯 ARROW BATTLE</div>
 
+    <!-- 🔘 BUTTONS -->
     <button class="btn" onclick="startGame()">▶ New Game</button>
     <button class="btn" onclick="continueGame()">🔁 Continue</button>
     <button class="btn" onclick="highScore()">🏆 High Score</button>
 
+    <!-- 👤 FOOTER -->
     <div class="footer">Powered by Ashikur Rahman</div>
+
   </div>
 
+  <!-- ⚙️ SCRIPT -->
   <script>
     function startGame() {
       window.location.href = "game.html";

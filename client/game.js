@@ -1,6 +1,6 @@
 const socket = io();
 
-// 🎮 Game Config
+// 🎮 CONFIG
 const config = {
   type: Phaser.AUTO,
   width: 800,
@@ -29,23 +29,41 @@ let scoreText;
 
 // ================= PRELOAD =================
 function preload() {
-  this.load.image("player", "https://labs.phaser.io/assets/sprites/phaser-dude.png");
-  this.load.image("arrow", "https://labs.phaser.io/assets/sprites/arrow.png");
+  // 🧍 Player (auto online)
+  this.load.image(
+    "player",
+    "https://labs.phaser.io/assets/sprites/phaser-dude.png"
+  );
+
+  // 🏹 Arrow
+  this.load.image(
+    "arrow",
+    "https://labs.phaser.io/assets/sprites/arrow.png"
+  );
+
+  // 🌌 Background
+  this.load.image(
+    "bg",
+    "https://labs.phaser.io/assets/skies/space3.png"
+  );
 }
 
 // ================= CREATE =================
 function create() {
   const self = this;
 
+  // 🌌 Background
+  this.add.image(400, 250, "bg").setDisplaySize(800, 500);
+
   arrows = this.physics.add.group();
 
-  // 🎯 Score display
+  // 🎯 Score
   scoreText = this.add.text(10, 10, "Score: 0", {
     fontSize: "20px",
     fill: "#ffffff"
   });
 
-  // 🔌 Socket events
+  // 🔌 SOCKET EVENTS
   socket.on("currentPlayers", (serverPlayers) => {
     Object.keys(serverPlayers).forEach((id) => {
       addPlayer(self, id, serverPlayers[id]);
@@ -63,11 +81,15 @@ function create() {
   socket.on("updatePlayers", (serverPlayers) => {
     Object.keys(serverPlayers).forEach((id) => {
       if (players[id]) {
-        players[id].setPosition(serverPlayers[id].x, serverPlayers[id].y);
+        players[id].setPosition(
+          serverPlayers[id].x,
+          serverPlayers[id].y
+        );
 
-        // update score display for self
         if (id === myId) {
-          scoreText.setText("Score: " + serverPlayers[id].score);
+          scoreText.setText(
+            "Score: " + serverPlayers[id].score
+          );
         }
       }
     });
@@ -86,7 +108,7 @@ function create() {
     }
   });
 
-  // 📱 TOUCH / CLICK SHOOT
+  // 📱 CLICK / TOUCH TO SHOOT
   this.input.on("pointerdown", function (pointer) {
     let player = players[myId];
     if (!player) return;
@@ -102,10 +124,7 @@ function create() {
 
     shootArrow(self, player, angle, power);
 
-    socket.emit("shoot", {
-      angle,
-      power
-    });
+    socket.emit("shoot", { angle, power });
   });
 }
 
@@ -113,20 +132,28 @@ function create() {
 function update() {}
 
 // ================= ADD PLAYER =================
-function addPlayer(scene, id, playerData) {
+function addPlayer(scene, id, data) {
   let player = scene.physics.add.sprite(
-    playerData.x,
-    playerData.y,
+    data.x,
+    data.y,
     "player"
   );
 
+  player.setScale(0.5);
   player.setCollideWorldBounds(true);
+
   players[id] = player;
 }
 
 // ================= SHOOT ARROW =================
 function shootArrow(scene, player, angle, power) {
-  let arrow = arrows.create(player.x, player.y, "arrow");
+  let arrow = scene.physics.add.image(
+    player.x,
+    player.y,
+    "arrow"
+  );
+
+  arrow.setScale(0.5);
 
   arrow.setVelocity(
     power * Math.cos(angle),
@@ -135,7 +162,7 @@ function shootArrow(scene, player, angle, power) {
 
   arrow.setRotation(angle);
 
-  // 💥 COLLISION DETECTION
+  // 💥 HIT DETECTION
   scene.physics.add.overlap(
     arrow,
     Object.values(players),
@@ -144,7 +171,6 @@ function shootArrow(scene, player, angle, power) {
 
       let hitY = arr.y - target.y;
 
-      // 🎯 Head or Body
       let points = hitY < -15 ? 10 : 5;
 
       socket.emit("hit", {
